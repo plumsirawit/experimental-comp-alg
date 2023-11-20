@@ -2,17 +2,19 @@
   An attempt to compute rational maps.
 */
 
+:- use_module(library(clpq)).
+
 /*
-  eval(Term, Out): evaluate Term at [0, 1, 0] and return Out.
+  eval(Term, X, Y, Z, Out): evaluate Term at [X, Y, Z] and return Out.
 */
 
-eval(Num, Out) :- number(Num), Out = Num.
-eval(x, Out) :- Out = 0.
-eval(y, Out) :- Out = 1.
-eval(z, Out) :- Out = 0.
-eval(Term, Out) :- Term = T1 + T2, eval(T1, Out1), eval(T2, Out2), Out = Out1+Out2.
-eval(Term, Out) :- Term = T1 * T2, eval(T1, Out1), eval(T2, Out2), Out = Out1*Out2.
-eval(Term, Out) :- Term = T1 / T2, eval(T1, Out1), eval(T2, Out2), \+ 0 is Out2, Out = Out1/Out2.
+eval(Num, _X, _Y, _Z, Out) :- number(Num), {Out = Num}.
+eval(x, X, _Y, _Z, Out) :- {Out = X}.
+eval(y, _X, Y, _Z, Out) :- {Out = Y}.
+eval(z, _X, _Y, Z, Out) :- {Out = Z}.
+eval(Term, X, Y, Z, Out) :- Term = T1 + T2, eval(T1, X, Y, Z, Out1), eval(T2, X, Y, Z, Out2), {Out = Out1+Out2}.
+eval(Term, X, Y, Z, Out) :- Term = T1 * T2, eval(T1, X, Y, Z, Out1), eval(T2, X, Y, Z, Out2), {Out = Out1*Out2}.
+eval(Term, X, Y, Z, Out) :- Term = T1 / T2, eval(T1, X, Y, Z, Out1), eval(T2, X, Y, Z, Out2), {Out2 =\= 0}, {Out = Out1/Out2}.
 
 /*
   simplify(Term, Out): simplify expression Term of numbers and atoms to simpler expressions.
@@ -50,10 +52,10 @@ simplify(A/B/C, E) :- simplify(A/(B*C), E).
 simplify(-D, E) :- simplify(D, E1), E = -E1.
 
 /*
-  eval_zero(Term): check whether Term evaluates to zero or not.
+  eval_zero(Term): check whether Term evaluates at [0, 1, 0] to zero or not.
 */
 
-eval_zero(Term) :- simplify(Term, Out), eval(Out, Out2), 0 is Out2.
+eval_zero(Term) :- simplify(Term, Out), eval(Out, 0, 1, 0, 0).
 
 /*
   needle_haystack(N, H): check whether an atom N exists in H. (https://stackoverflow.com/a/57602983/8757529)
