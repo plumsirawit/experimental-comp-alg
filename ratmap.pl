@@ -12,11 +12,10 @@ eval(y, Out) :- Out = 1.
 eval(z, Out) :- Out = 0.
 eval(Term, Out) :- Term = T1 + T2, eval(T1, Out1), eval(T2, Out2), Out = Out1+Out2.
 eval(Term, Out) :- Term = T1 * T2, eval(T1, Out1), eval(T2, Out2), Out = Out1*Out2.
-eval(Term, Out) :- dif(T1, T2), Term = T1 / T2, eval(T1, Out1), eval(T2, Out2), Out = Out1/Out2.
-eval(Term, Out) :- Term = T / T, Out = 1.
+eval(Term, Out) :- Term = T1 / T2, eval(T1, Out1), eval(T2, Out2), \+ 0 is Out2, Out = Out1/Out2.
 
 /*
-  simplify(Term, Out): simplify numerical Term to a single numeric value.
+  simplify(Term, Out): simplify expression Term of numbers and atoms to simpler expressions.
 */
 
 simplify(Atom, Out) :- atomic(Atom), Out = Atom.
@@ -32,6 +31,22 @@ simplify(D+F, E) :- D \= 0, F \= 0, simplify(D, E1), simplify(F, E2), ((D = E1, 
 simplify(D*F, E) :- D \= 0, F \= 0, D \= 1, F \= 1, simplify(D, E1), simplify(F, E2), ((D = E1, F = E2, E = E1 * E2); (dif(D, E1); dif(F, E2)), simplify(E1*E2, E)).
 simplify(D-F, E) :- simplify(D, E1), simplify(F, E2), ((D = E1, F = E2, E = E1 - E2); (dif(D, E1); dif(F, E2)), simplify(E1-E2, E)).
 simplify(D/F, E) :- D \= 0, F \= 0, simplify(D, E1), simplify(F, E2), ((D = E1, F = E2, E = D/F); (dif(D, E1); dif(F, E2)), simplify(E1/E2, E)).
+simplify(D/F, E) :- D = LD * F, simplify(LD, E).
+simplify(D/F, E) :- D = F * RD, simplify(RD, E).
+simplify(D/F, E) :- D = LD * F * RD, simplify(LD*RD, E).
+simplify(D/F, E) :- F = LD * D, simplify(1/LD, E).
+simplify(D/F, E) :- F = D * RD, simplify(1/RD, E).
+simplify(D/F, E) :- F = LD * D * RD, simplify(1/(LD*RD), E).
+simplify(D/F, E) :- D = T * RD, F = T * RF, simplify(RD/RF, E).
+simplify(D/F, E) :- D = LD * T, F = LF * T, simplify(LD/LF, E).
+simplify(D/F, E) :- D = LD * T, F = T * RF, simplify(LD/RF, E).
+simplify(D/F, E) :- D = T * RD, F = LF * T, simplify(RD/LF, E).
+simplify(D/F, E) :- D = T * RD, F = LF * T * RF, simplify(RD/(LF*RF), E).
+simplify(D/F, E) :- D = LD * T, F = LF * T * RF, simplify(LD/(LF*RF), E).
+simplify(D/F, E) :- D = LD * T * RD, F = T * RF, simplify((LD*RD)/RF, E).
+simplify(D/F, E) :- D = LD * T * RD, F = LF * T, simplify((LD*RD)/LF, E).
+simplify(D/F, E) :- D = LD * T * RD, F = LF * T * RF, simplify((LD*RD)/(LF*RF), E).
+simplify(A/B/C, E) :- simplify(A/(B*C), E).
 simplify(-D, E) :- simplify(D, E1), E = -E1.
 
 /*
