@@ -2,16 +2,21 @@
   An attempt to compute rational maps.
 */
 
-:- use_module(library(clpq)).
+/*
+  @TODO: Implement eq in CLP(RT) using the same interfacee as CLP(Q).
+*/
+
+eq(TermL, TermR) :- TermL = TermR.
+
 
 /*
   eval(Term, X, Y, Z, Out): evaluate Term at [X, Y, Z] and return Out.
 */
 
-eval(Num, _X, _Y, _Z, Out) :- number(Num), {Out = Num}.
-eval(x, X, _Y, _Z, Out) :- {Out = X}.
-eval(y, _X, Y, _Z, Out) :- {Out = Y}.
-eval(z, _X, _Y, Z, Out) :- {Out = Z}.
+eval(Num, _X, _Y, _Z, Out) :- number(Num), eq(Out, Num).
+eval(x, X, _Y, _Z, Out) :- eq(Out, X).
+eval(y, _X, Y, _Z, Out) :- eq(Out, Y).
+eval(z, _X, _Y, Z, Out) :- eq(Out, Z).
 eval(Term, X, Y, Z, Out) :- Term = T1 + T2, eval(T1, X, Y, Z, Out1), eval(T2, X, Y, Z, Out2), {Out = Out1+Out2}.
 eval(Term, X, Y, Z, Out) :- Term = T1 * T2, eval(T1, X, Y, Z, Out1), eval(T2, X, Y, Z, Out2), {Out = Out1*Out2}.
 eval(Term, X, Y, Z, Out) :- Term = T1 / T2, eval(T1, X, Y, Z, Out1), eval(T2, X, Y, Z, Out2), {Out2 =\= 0}, {Out = Out1/Out2}.
